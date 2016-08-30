@@ -1,0 +1,38 @@
+﻿生成启动时间为 2016/8/29 16:58:02。
+     1>项目“C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\TestCurlJson\TestCurlJson.vcxproj”在节点 2 上(build 个目标)。
+     1>InitializeBuildStatus:
+         正在创建“Debug\TestCurlJson.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         所有输出均为最新。
+         D:\Microsoft Visual Studio10\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"StdAfx.h" /Fp"Debug\TestCurlJson.pch" /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt TestCurlJson.cpp TestCurlJsonDlg.cpp
+         TestCurlJsonDlg.cpp
+     1>c:\users\admin\documents\visual studio 2010\projects\testcurljson\testcurljson\testcurljsondlg.cpp(274): warning C4482: 使用了非标准扩展: 限定名中使用了枚举“CURLcode”
+     1>c:\users\admin\documents\visual studio 2010\projects\testcurljson\testcurljson\testcurljsondlg.cpp(297): warning C4018: “<”: 有符号/无符号不匹配
+         正在生成代码...
+         正在编译...
+         TestCurlJson.cpp
+         正在生成代码...
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /l"0x0804" /IDebug\ /nologo /fo"Debug\TestCurlJson.res" TestCurlJson.rc 
+       ManifestResourceCompile:
+         所有输出均为最新。
+       Link:
+         D:\Microsoft Visual Studio10\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\Debug\TestCurlJson.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\admin\Documents\Visual Studio 2010\Projects\TestCurlJson\TestCurlJson" /MANIFEST /ManifestFile:"Debug\TestCurlJson.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\Debug\TestCurlJson.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\Debug\TestCurlJson.lib" /MACHINE:X86 Debug\TestCurlJson.res
+         Debug\TestCurlJson.exe.embed.manifest.res
+         Debug\stdafx.obj
+         Debug\TestCurlJson.obj
+         Debug\TestCurlJsonDlg.obj
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\TestCurlJson.exe.embed.manifest" /manifest Debug\TestCurlJson.exe.intermediate.manifest "D:\Microsoft Visual Studio10\VC\Include\Manifest\dpiaware.manifest"
+         所有输出均为最新。
+       LinkEmbedManifest:
+         所有输出均为最新。
+         TestCurlJson.vcxproj -> C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\Debug\TestCurlJson.exe
+       FinalizeBuildStatus:
+         正在删除文件“Debug\TestCurlJson.unsuccessfulbuild”。
+         正在对“Debug\TestCurlJson.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“C:\Users\admin\documents\visual studio 2010\Projects\TestCurlJson\TestCurlJson\TestCurlJson.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:04.71
