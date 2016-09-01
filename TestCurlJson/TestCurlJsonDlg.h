@@ -1,6 +1,9 @@
 
 // TestCurlJsonDlg.h : Í·ÎÄ¼þ
 //
+#include "CvvImage.h"
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
 
 #pragma once
 
@@ -28,10 +31,16 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton1();
 	char m_showDate;
 	char m_show2;
 	CString m_show;
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton4();
+	afx_msg void OnBnClickedButton5();
 };

@@ -13,6 +13,9 @@
 #include "curl/curl.h"
 #include <string>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #pragma comment(lib, "libcurld_imp.lib") 
 
 //json
@@ -23,9 +26,17 @@
 
 
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+//opencv 全局变量
+CvCapture* capture;
+CRect rect;
+CDC *pDC;
+HDC hDC;
+CWnd *pwnd;
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -82,7 +93,14 @@ BEGIN_MESSAGE_MAP(CTestCurlJsonDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON1, &CTestCurlJsonDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CTestCurlJsonDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CTestCurlJsonDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CTestCurlJsonDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CTestCurlJsonDlg::OnBnClickedButton5)
+
+
 END_MESSAGE_MAP()
 
 
@@ -117,7 +135,14 @@ BOOL CTestCurlJsonDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	
 	// TODO: 在此添加额外的初始化代码
+	pwnd = GetDlgItem(IDB_BITMAP1);
+	//pwnd->MoveWindow(35,30,352,288);
+	pDC =pwnd->GetDC();
+	//pDC =GetDC();
+	hDC= pDC->GetSafeHdc();
+	pwnd->GetClientRect(&rect);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -172,6 +197,27 @@ HCURSOR CTestCurlJsonDlg::OnQueryDragIcon()
 }
 
 
+void CTestCurlJsonDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+	/************************************************************************/
+	/* 显示摄像头                                                           */
+	/************************************************************************/
+	IplImage* m_Frame;
+	m_Frame=cvQueryFrame(capture);
+	CvvImage m_CvvImage;
+	m_CvvImage.CopyOf(m_Frame,1);	
+	if (true)
+	{
+		m_CvvImage.DrawToHDC(hDC, &rect);
+		//cvWaitKey(10);
+	}
+
+
+	CDialog::OnTimer(nIDEvent);
+}
+
+
 //curl回调方法
 size_t http_data_writer(void* data, size_t size, size_t nmemb, void* content)  
 {  
@@ -201,17 +247,6 @@ wchar_t* ConvertUtf8ToUnicode(const char* utf8)
 	nLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)utf8, -1, wszUNICODE, nLen);    //把utf8转成unicode
 	return wszUNICODE;
 }
-
-/*char* ConvertUnicodeToUtf8(const wchar_t* unicode)  
-{  
-	//if(unicode == NULL){return unicode("\0");}
-    int len;  
-    len = WideCharToMultiByte(CP_UTF8, 0,unicode, -1, NULL, 0, NULL, NULL);  
-    char *szUtf8 = (char*)malloc(len + 1);  
-    memset(szUtf8, 0, len + 1);  
-    WideCharToMultiByte(CP_UTF8, 0,unicode, -1, szUtf8, len, NULL,NULL);  
-    return szUtf8;  
-}*/
 
 std::string wstring2string(const std::wstring & wstr)
 {
@@ -312,4 +347,187 @@ void CTestCurlJsonDlg::OnBnClickedButton1()
 			}
 	  }
 	  curl_easy_cleanup(curl);
+}
+
+int http_post_file(const char *url, const char *filename)
+{
+    CURL *curl = NULL;
+    CURLcode res;
+
+      struct curl_httppost *post=NULL;
+      struct curl_httppost *last=NULL;
+      struct curl_slist *headerlist=NULL;
+
+	  static const char buf[] = "Expect:";
+
+    if(filename == NULL || url == NULL)
+        return -1;
+
+    printf("URL: %s\n", url);
+    printf("filename: %s\n", filename);
+
+    /* Add simple file section */
+    if( curl_formadd(&post, &last, CURLFORM_COPYNAME, "file",
+               CURLFORM_FILE, filename, CURLFORM_END) != 0)
+    {
+        fprintf(stderr, "curl_formadd error.\n");
+        return -1;
+    }
+    
+      /* Fill in the submit field too, even if this is rarely needed */
+      curl_formadd(&post, &last,
+               CURLFORM_COPYNAME, "submit",
+               CURLFORM_COPYCONTENTS, "OK",
+               CURLFORM_END);
+
+
+	  //headerlist = curl_slist_append(headerlist, "Accept-Encoding:UTF-8");  
+        //headerlist = curl_slist_append(headerlist, "Content-type: application/form-data;charset:UTF-8");  
+     headerlist = curl_slist_append(headerlist, buf); 
+
+    //curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    if(curl == NULL)
+    {
+        fprintf(stderr, "curl_easy_init() error.\n");
+		curl_formfree(post);
+        return -1;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_HEADER, 0);
+    curl_easy_setopt(curl, CURLOPT_URL, url); /*Set URL*/
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, post);
+    int timeout = 5;
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1);
+
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+    {
+        fprintf(stderr, "curl_easy_perform[%d] error.\n", res);
+		curl_formfree(post);
+        return -1;
+    }
+
+    curl_easy_cleanup(curl);    
+
+    return 0;
+}
+
+void CTestCurlJsonDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	//char sFilePath[128]="d:\\abc\1.bmp";
+	//const char * localfile = "F:\\abc\\123456ab.bmp";
+	const char * localfile = "C:/Users/admin/Documents/Visual Studio 2010/Projects/TestCurlJson/TestCurlJson/1123.bmp";
+	 //POST File
+    http_post_file("http://192.168.0.116:8080/TianMen/UploadFile.servlet", localfile);
+
+	getchar();
+
+}
+
+void CTestCurlJsonDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if(!capture)
+	{
+		capture = cvCaptureFromCAM(0);
+		//AfxMessageBox("OK");
+	}
+
+	if (!capture)
+	{
+		//AfxMessageBox("无法打开摄像头");
+		return;
+	}
+
+	// 测试
+	IplImage* m_Frame;
+	m_Frame=cvQueryFrame(capture);
+	CvvImage m_CvvImage;
+	m_CvvImage.CopyOf(m_Frame,1);	
+	if (true)
+	{
+		m_CvvImage.DrawToHDC(hDC, &rect);
+		//cvWaitKey(10);
+	}
+
+	// 设置计时器,每10ms触发一次事件
+	SetTimer(1,10,NULL);
+}
+
+
+void CTestCurlJsonDlg::OnBnClickedButton4()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	cvReleaseCapture(&capture);
+	CDC MemDC; 
+	CBitmap m_Bitmap1;
+	m_Bitmap1.LoadBitmap(IDB_BITMAP1); 
+	MemDC.CreateCompatibleDC(NULL);
+	MemDC.SelectObject(&m_Bitmap1);
+	pDC->StretchBlt(rect.left,rect.top,rect.Width(),rect.Height(),&MemDC,0,0,48,48,SRCCOPY); 
+}
+
+
+void CTestCurlJsonDlg::OnBnClickedButton5()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	 if (!capture)
+		return;
+
+	IplImage * m_GrabFrame=cvQueryFrame(capture);
+	if (!m_GrabFrame)
+		return;
+
+	/*static	char countsnap='1';
+	CString   m_name="";
+	m_name=+countsnap;
+	m_name+=".bmp";  */
+	
+	IplImage * m_snap=cvCreateImage(cvGetSize(m_GrabFrame),m_GrabFrame->depth,m_GrabFrame->nChannels);
+	cvCopy(m_GrabFrame,m_snap,NULL);
+
+	const char* pFileName = "1123.bmp";
+	cvSaveImage(pFileName,m_snap);	//把图像写入文件
+
+    //CString BmpName = dlg.GetPathName();     //获取文件路径名   如   D:\pic\abc.bmp  路径
+	std::string fileName(pFileName);
+	std::string fileRoad = "C:/Users/admin/Documents/Visual Studio 2010/Projects/TestCurlJson/TestCurlJson/"+fileName;
+	CString BmpName = string2wstring(fileRoad).c_str();
+    //CString EntName = dlg.GetFileExt();      //获取文件扩展名                        bmp
+
+      //定义变量存储图片信息
+      BITMAPINFO *pBmpInfo;       //记录图像细节
+      BYTE *pBmpData;             //图像数据
+      BITMAPFILEHEADER bmpHeader; //文件头
+      BITMAPINFOHEADER bmpInfo;   //信息头
+      CFile bmpFile;              //记录打开文件
+
+      //以只读的方式打开文件 读取bmp图片各部分 bmp文件头 信息 数据
+      if(!bmpFile.Open(BmpName, CFile::modeRead|CFile::typeBinary)) 
+        return;
+      if (bmpFile.Read(&bmpHeader,sizeof(BITMAPFILEHEADER)) != sizeof(BITMAPFILEHEADER))
+        return;
+      if (bmpFile.Read(&bmpInfo,sizeof(BITMAPINFOHEADER)) != sizeof(BITMAPINFOHEADER))
+        return;
+      pBmpInfo = (BITMAPINFO *)new char[sizeof(BITMAPINFOHEADER)];
+      //为图像数据申请空间
+      memcpy(pBmpInfo,&bmpInfo,sizeof(BITMAPINFOHEADER));
+      DWORD dataBytes = bmpHeader.bfSize - bmpHeader.bfOffBits;
+      pBmpData = (BYTE*)new char[dataBytes];
+      bmpFile.Read(pBmpData,dataBytes);
+      bmpFile.Close();
+
+      //显示图像
+      CWnd *pWnd=GetDlgItem(IDC_SHOW); //获得pictrue控件窗口的句柄
+      CRect rect;
+      pWnd->GetClientRect(&rect); //获得pictrue控件所在的矩形区域
+      CDC *pDC=pWnd->GetDC(); //获得pictrue控件的DC
+      pDC->SetStretchBltMode(COLORONCOLOR);
+      StretchDIBits(pDC->GetSafeHdc(),0,0,rect.Width(),rect.Height(),0,0,
+      bmpInfo.biWidth,bmpInfo.biHeight,pBmpData,pBmpInfo,DIB_RGB_COLORS,SRCCOPY);
+
 }
